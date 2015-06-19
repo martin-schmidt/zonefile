@@ -487,5 +487,77 @@ ENDH
    out
  end
 
+	def dump
+	  out = [self.soa[:origin],self.soa[:ttl],'IN','SOA',self.soa[:primary],self.soa[:email],self.soa[:serial],self.soa[:refresh],self.soa[:retry],self.soa[:expire],self.soa[:minimumTTL]].join(' ')  + "\n"
+
+	  self.ns.each do |ns|
+	    out <<  [ns[:name],ns[:ttl],ns[:class],'NS',ns[:host]].join(' ')+"\n"
+	  end
+	  self.mx.each do |mx|
+	    out << [mx[:name],mx[:ttl],mx[:class],'MX',mx[:pri],mx[:host]].join(' ')+"\n"
+	  end
+
+	  self.a.each do |a|
+	    out <<  [a[:name],a[:ttl],a[:class],'A',a[:host]].join(' ')+"\n"
+	  end
+
+	  self.cname.each do |cn|
+	    out << [cn[:name],cn[:ttl],cn[:class],'CNAME',cn[:host]].join(' ')+"\n"
+	  end
+
+	  self.a4.each do |a4|
+	    out << [a4[:name],a4[:ttl],a4[:class],'AAAA',a4[:host]].join(' ')+"\n"
+	  end
+
+	  self.txt.each do |tx|
+	    out << [tx[:name],tx[:ttl],tx[:class],'TXT',tx[:text]].join(' ')+"\n"
+	  end
+
+	  self.spf.each do |spf|
+	    out << [spf[:name],spf[:ttl],spf[:class],'SPF',spf[:text]].join(' ')+"\n"
+	  end
+
+	  self.srv.each do |srv|
+	    out << [srv[:name],srv[:ttl],srv[:class],'SRV',srv[:pri],srv[:weight],srv[:port],srv[:host]].join(' ')+"\n"
+	  end
+
+	  self.ptr.each do |ptr|
+	    out << [ptr[:name],ptr[:ttl],ptr[:class],'PTR',ptr[:host]].join(' ')+"\n"
+	  end
+
+	  self.ds.each do |ds|
+	    out << [ds[:name],ds[:ttl],ds[:class],'DS',ds[:key_tag],ds[:algorithm],ds[:digest_type],ds[:digest]].join(' ')+"\n"
+	  end
+
+	  self.nsec.each do |nsec|
+	    out << [nsec[:name],nsec[:ttl],nsec[:class],'NSEC',nsec[:next],nsec[:types]].join(' ')+"\n"
+	  end
+
+	  self.nsec3.each do |nsec3|
+	    out << [nsec3[:name],nsec3[:ttl],nsec3[:class],'NSEC3',nsec3[:algorithm],nsec3[:flags],nsec3[:iterations],nsec3[:salt],nsec3[:next],nsec3[:types]].join(' ')+"\n"
+	  end
+
+	  self.nsec3param.each do |nsec3param|
+	    out << [nsec3param[:name],nsec3param[:ttl],nsec3param[:class],'NSEC3PARAM',nsec3param[:algorithm],nsec3param[:flags],nsec3param[:iterations],nsec3param[:salt]].join(' ')+"\n"
+	  end
+
+	  self.dnskey.each do |dnskey|
+	    out << [dnskey[:name],dnskey[:ttl],dnskey[:class],'DNSKEY',dnskey[:flag],dnskey[:protocol],dnskey[:algorithm],dnskey[:public_key]].join(' ')+"\n"
+	  end
+
+	  self.rrsig.each do |rrsig|
+	    out << [rrsig[:name],rrsig[:ttl],rrsig[:class],'RRSIG',rrsig[:type_covered],rrsig[:algorithm],rrsig[:labels],rrsig[:original_ttl],rrsig[:expiration],rrsig[:inception],rrsig[:key_tag],rrsig[:signer],rrsig[:signature]].join(' ')+"\n"
+	  end
+
+	  self.tlsa.each do |tlsa|
+	    out << [tlsa[:name],tlsa[:ttl],tlsa[:class],'TLSA',tlsa[:certificate_usage],tlsa[:selector],tlsa[:matching_type],tlsa[:data]].join(' ')+"\n"
+	  end
+
+	  self.naptr.each do |naptr|
+	    out << [naptr[:name],naptr[:ttl],naptr[:class],'NAPTR',naptr[:order],naptr[:preference],naptr[:flags],naptr[:service],naptr[:regexp],naptr[:replacement]].join(' ')+"\n"
+	  end
+
+	  out
+	end
 end
 
