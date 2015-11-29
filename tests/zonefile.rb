@@ -152,16 +152,16 @@ class TC_Zonefile  < Minitest::Unit::TestCase
   end
 
 
-  def test_a4
-    assert_equal 'icarus', @zf.a4[0][:name]
-    assert_equal 'IN', @zf.a4[0][:class]
-    assert_equal 1, @zf.a4.size
-    assert_equal 'fe80::0260:83ff:fe7c:3a2a', @zf.a4[0][:host]
+  def test_aaaa
+    assert_equal 'icarus', @zf.aaaa[0][:name]
+    assert_equal 'IN', @zf.aaaa[0][:class]
+    assert_equal 1, @zf.aaaa.size
+    assert_equal 'fe80::0260:83ff:fe7c:3a2a', @zf.aaaa[0][:host]
     begin
-      @swap_a4 = true
+      @swap_aaaa = true
       swap
-      test_a4
-    end unless @swap_a4
+      test_aaaa
+    end unless @swap_aaaa
   end
   
   def test_srv

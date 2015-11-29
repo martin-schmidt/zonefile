@@ -2,9 +2,9 @@
 
 ## Description
 
-This class can read, manipulate and create DNS zone files. It supports A, AAAA, MX, NS, SOA, 
+This class can read, manipulate and create DNS zone files. It supports A, AAAA, MX, NS, SOA,
 TXT, CNAME, PTR and SRV records. The data can be accessed by the instance method of the same
-name. All except SOA return an array of hashes containing the named data. SOA directly returns the 
+name. All except SOA return an array of hashes containing the named data. SOA directly returns the
 hash since there can only be one SOA information.
 
 The following hash keys are returned per record type:
@@ -21,7 +21,7 @@ The following hash keys are returned per record type:
      :name, :ttl, :class, :host
 * TXT  
      :name, :ttl, :class, :text
-* A4 (AAAA)  
+* AAAA  
      :name, :ttl, :class, :host
 * PTR  
      :name, :ttl, :class, :host
@@ -52,7 +52,7 @@ The following hash keys are returned per record type:
 ## Read a Zonefile
 
     zf = Zonefile.from_file('/path/to/zonefile.db')
-  
+
     # Display MX-Records
     zf.mx.each do |mx_record|
       puts "Mail Exchagne with priority: #{mx_record[:pri]} --> #{mx_record[:host]}"
@@ -60,7 +60,7 @@ The following hash keys are returned per record type:
 
     # Show SOA TTL
     puts "Record Time To Live: #{zf.soa[:ttl]}"
- 
+
     # Show A-Records
     zf.a.each do |a_record|
       puts "#{a_record[:name]} --> #{a_record[:host]}"
@@ -69,12 +69,12 @@ The following hash keys are returned per record type:
 ## Manipulate a Zonefile
 
     zf = Zonefile.from_file('/path/to/zonefile.db')
-  
+
     # Change TTL and add an A-Record
-  
+
     zf.soa[:ttl] = '123123'      # Change the SOA ttl
     zf.a << { :class => 'IN', :name => 'www', :host => '192.168.100.1', :ttl => 3600 }  # add A-Record
- 
+
     # Setting PTR records (deleting existing ones)
 
     zf.ptr = [ { :class => 'IN', :name=>'1.100.168.192.in-addr.arpa', :host => 'my.host.com' },
@@ -97,8 +97,8 @@ You can switch this off globally by calling Zonefile.preserve_name(false)
 MIT License
 
 # Authors
- 
-Martin Boese, based on Simon Flack Perl library DNS::ZoneParse 
+
+Martin Boese, based on Simon Flack Perl library DNS::ZoneParse
 
 Andy Newton, patch to support various additional records
 

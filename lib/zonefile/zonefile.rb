@@ -2,9 +2,9 @@
 # = Ruby Zonefile - Parse and manipulate DNS Zone Files.
 #
 # == Description
-# This class can read, manipulate and create DNS zone files. It supports A, AAAA, MX, NS, SOA, 
+# This class can read, manipulate and create DNS zone files. It supports A, AAAA, MX, NS, SOA,
 # TXT, CNAME, PTR and SRV records. The data can be accessed by the instance method of the same
-# name. All except SOA return an array of hashes containing the named data. SOA directly returns the 
+# name. All except SOA return an array of hashes containing the named data. SOA directly returns the
 # hash since there can only be one SOA information.
 #
 # The following hash keys are returned per record type:
@@ -21,7 +21,7 @@
 #    - :name, :ttl, :class, :host
 # * TXT
 #    - :name, :ttl, :class, :text
-# * A4 (AAAA)
+# * AAAA
 #    - :name, :ttl, :class, :host
 # * PTR
 #    - :name, :ttl, :class, :host
@@ -52,7 +52,7 @@
 # === Read a Zonefile
 #
 #  zf = Zonefile.from_file('/path/to/zonefile.db')
-#  
+#
 #  # Display MX-Records
 #  zf.mx.each do |mx_record|
 #     puts "Mail Exchagne with priority: #{mx_record[:pri]} --> #{mx_record[:host]}"
@@ -94,46 +94,46 @@
 # You can switch this off globally by calling Zonefile.preserve_name(false)
 #
 # == Authors
-# 
-# Martin Boese, based on Simon Flack Perl library DNS::ZoneParse 
+#
+# Martin Boese, based on Simon Flack Perl library DNS::ZoneParse
 #
 # Andy Newton, patch to support various additional records
 #
 
 class Zonefile
 
- RECORDS = %w{ mx a a4 ns cname txt ptr srv soa ds dnskey rrsig nsec nsec3 nsec3param tlsa naptr spf }
+ RECORDS = %w{ mx a aaaa ns cname txt ptr srv soa ds dnskey rrsig nsec nsec3 nsec3param tlsa naptr spf }
  attr :records
  attr :soa
  attr :data
 # global $ORIGIN option
- attr :origin 
+ attr :origin
  # global $TTL option
  attr :ttl
- 
+
  @@preserve_name = true
 
- # For compatibility: This can switches off copying of the :name from the 
- # previous record in a zonefile if found omitted. 
- # This was zonefile's behavior in <= 1.03 .  
+ # For compatibility: This can switches off copying of the :name from the
+ # previous record in a zonefile if found omitted.
+ # This was zonefile's behavior in <= 1.03 .
  def self.preserve_name(do_preserve_name)
    @@preserve_name = do_preserve_name
  end
- 
+
  def method_missing(m, *args)
    mname = m.to_s.sub("=","")
    return super unless RECORDS.include?(mname)
-   
+
    if m.to_s[-1].chr == '=' then
      @records[mname.intern] = args.first
      @records[mname.intern]
-   else 
+   else
      @records[m]
    end
  end
 
 
- # Compact a zonefile content - removes empty lines, comments, 
+ # Compact a zonefile content - removes empty lines, comments,
  # converts tabs into spaces etc...
  def self.simplify(zf)
     # concatenate everything split over multiple lines in parentheses - remove ;-comments in block
@@ -160,13 +160,13 @@ class Zonefile
    @data = zonefile
    @filename = file_name
    @origin = origin || (file_name ? file_name.split('/').last : '')
-  
+
    @records = {}
    @soa = {}
    RECORDS.each { |r| @records[r.intern] = [] }
    parse
  end
- 
+
  # True if no records (except sao) is defined in this file
  def empty?
    RECORDS.each do |r|
@@ -174,12 +174,12 @@ class Zonefile
    end
    true
  end
- 
+
  # Create a new object by reading the content of a file
  def self.from_file(file_name, origin = nil)
     Zonefile.new(File.read(file_name), file_name.split('/').last, origin)
  end
- 
+
  def add_record(type, data= {})
     if @@preserve_name then
       @lastname = data[:name] if data[:name].to_s != ''
@@ -187,7 +187,7 @@ class Zonefile
     end
     @records[type.downcase.intern] << data
  end
- 
+
  # Generates a new serial number in the format of YYYYMMDDII if possible
  def new_serial
    base = "%04d%02d%02d" % [Time.now.year, Time.now.month, Time.now.day ]
@@ -197,12 +197,12 @@ class Zonefile
        @soa[:serial] = ns.to_s
        return ns.to_s
    end
-   
+
    ii = 0
    while (("#{base}%02d" % ii).to_i <= @soa[:serial].to_i) do
     ii += 1
    end
-   @soa[:serial] = "#{base}%02d" % ii   
+   @soa[:serial] = "#{base}%02d" % ii
  end
 
  def parse_line(line)
@@ -229,9 +229,9 @@ class Zonefile
     elsif line=~/^(#{valid_name})? \s*
                 #{ttl_cls}
                 AAAA \s
-                (#{valid_ip6})               
+                (#{valid_ip6})
                 /x then
-              add_record('a4', :name => $1, :ttl => $2, :class => $3, :host => $4)
+              add_record('aaaa', :name => $1, :ttl => $2, :class => $3, :host => $4)
     elsif line=~/^(#{valid_name})? \s*
                  #{ttl_cls}
                  MX \s
@@ -369,18 +369,18 @@ class Zonefile
              add_record('txt', :name => $1, :ttl => $2, :class => $3, :text => $4.strip)
     elsif line =~ /^(#{valid_name})? \s* #{ttl_cls} SPF \s+ (.*)$/ix
              add_record('spf', :name => $1, :ttl => $2, :class => $3, :text => $4.strip)
-    elsif line =~ /\$TTL\s+(#{rr_ttl})/i 
+    elsif line =~ /\$TTL\s+(#{rr_ttl})/i
             @ttl = $1
     end
  end
 
  def parse
     Zonefile.simplify(@data).each_line do |line|
-        parse_line(line)      
+        parse_line(line)
     end
  end
- 
- 
+
+
  # Build a new nicely formatted Zonefile
  #
  def output
@@ -408,20 +408,20 @@ ENDH
    self.mx.each do |mx|
      out << "#{mx[:name]}	#{mx[:ttl]}	#{mx[:class]}	MX	#{mx[:pri]} #{mx[:host]}\n"
    end
-   
+
    out << "\n; Zone A Records\n" unless self.a.empty?
    self.a.each do |a|
         out <<  "#{a[:name]}	#{a[:ttl]}	#{a[:class]}	A	#{a[:host]}\n"
-   end   
+   end
 
    out << "\n; Zone CNAME Records\n" unless self.cname.empty?
    self.cname.each do |cn|
      out << "#{cn[:name]}	#{cn[:ttl]}	#{cn[:class]}	CNAME	#{cn[:host]}\n"
-   end  
+   end
 
-   out << "\n; Zone AAAA Records\n" unless self.a4.empty?
-   self.a4.each do |a4|
-     out << "#{a4[:name]}	#{a4[:ttl]}	#{a4[:class]}	AAAA	#{a4[:host]}\n"
+   out << "\n; Zone AAAA Records\n" unless self.aaaa.empty?
+   self.aaaa.each do |aaaa|
+     out << "#{aaaa[:name]}	#{aaaa[:ttl]}	#{aaaa[:class]}	AAAA	#{aaaa[:host]}\n"
    end
 
    out << "\n; Zone TXT Records\n" unless self.txt.empty?
@@ -438,7 +438,7 @@ ENDH
    self.srv.each do |srv|
      out << "#{srv[:name]}	#{srv[:ttl]}	#{srv[:class]}	SRV	#{srv[:pri]} #{srv[:weight]} #{srv[:port]}	#{srv[:host]}\n"
    end
-   
+
    out << "\n; Zone PTR Records\n" unless self.ptr.empty?
    self.ptr.each do |ptr|
      out << "#{ptr[:name]}	#{ptr[:ttl]}	#{ptr[:class]}	PTR	#{ptr[:host]}\n"
@@ -487,5 +487,76 @@ ENDH
    out
  end
 
-end
+	def dump
+	  out = [self.soa[:origin],self.soa[:ttl],'IN','SOA',self.soa[:primary],self.soa[:email],self.soa[:serial],self.soa[:refresh],self.soa[:retry],self.soa[:expire],self.soa[:minimumTTL]].join(' ')  + "\n"
 
+	  self.ns.each do |ns|
+	    out <<  [ns[:name],ns[:ttl],ns[:class],'NS',ns[:host]].join(' ')+"\n"
+	  end
+	  self.mx.each do |mx|
+	    out << [mx[:name],mx[:ttl],mx[:class],'MX',mx[:pri],mx[:host]].join(' ')+"\n"
+	  end
+
+	  self.a.each do |a|
+	    out <<  [a[:name],a[:ttl],a[:class],'A',a[:host]].join(' ')+"\n"
+	  end
+
+	  self.cname.each do |cn|
+	    out << [cn[:name],cn[:ttl],cn[:class],'CNAME',cn[:host]].join(' ')+"\n"
+	  end
+
+	  self.aaaa.each do |aaaa|
+	    out << [aaaa[:name],aaaa[:ttl],aaaa[:class],'AAAA',aaaa[:host]].join(' ')+"\n"
+	  end
+
+	  self.txt.each do |tx|
+	    out << [tx[:name],tx[:ttl],tx[:class],'TXT',tx[:text]].join(' ')+"\n"
+	  end
+
+	  self.spf.each do |spf|
+	    out << [spf[:name],spf[:ttl],spf[:class],'SPF',spf[:text]].join(' ')+"\n"
+	  end
+
+	  self.srv.each do |srv|
+	    out << [srv[:name],srv[:ttl],srv[:class],'SRV',srv[:pri],srv[:weight],srv[:port],srv[:host]].join(' ')+"\n"
+	  end
+
+	  self.ptr.each do |ptr|
+	    out << [ptr[:name],ptr[:ttl],ptr[:class],'PTR',ptr[:host]].join(' ')+"\n"
+	  end
+
+	  self.ds.each do |ds|
+	    out << [ds[:name],ds[:ttl],ds[:class],'DS',ds[:key_tag],ds[:algorithm],ds[:digest_type],ds[:digest]].join(' ')+"\n"
+	  end
+
+	  self.nsec.each do |nsec|
+	    out << [nsec[:name],nsec[:ttl],nsec[:class],'NSEC',nsec[:next],nsec[:types]].join(' ')+"\n"
+	  end
+
+	  self.nsec3.each do |nsec3|
+	    out << [nsec3[:name],nsec3[:ttl],nsec3[:class],'NSEC3',nsec3[:algorithm],nsec3[:flags],nsec3[:iterations],nsec3[:salt],nsec3[:next],nsec3[:types]].join(' ')+"\n"
+	  end
+
+	  self.nsec3param.each do |nsec3param|
+	    out << [nsec3param[:name],nsec3param[:ttl],nsec3param[:class],'NSEC3PARAM',nsec3param[:algorithm],nsec3param[:flags],nsec3param[:iterations],nsec3param[:salt]].join(' ')+"\n"
+	  end
+
+	  self.dnskey.each do |dnskey|
+	    out << [dnskey[:name],dnskey[:ttl],dnskey[:class],'DNSKEY',dnskey[:flag],dnskey[:protocol],dnskey[:algorithm],dnskey[:public_key]].join(' ')+"\n"
+	  end
+
+	  self.rrsig.each do |rrsig|
+	    out << [rrsig[:name],rrsig[:ttl],rrsig[:class],'RRSIG',rrsig[:type_covered],rrsig[:algorithm],rrsig[:labels],rrsig[:original_ttl],rrsig[:expiration],rrsig[:inception],rrsig[:key_tag],rrsig[:signer],rrsig[:signature]].join(' ')+"\n"
+	  end
+
+	  self.tlsa.each do |tlsa|
+	    out << [tlsa[:name],tlsa[:ttl],tlsa[:class],'TLSA',tlsa[:certificate_usage],tlsa[:selector],tlsa[:matching_type],tlsa[:data]].join(' ')+"\n"
+	  end
+
+	  self.naptr.each do |naptr|
+	    out << [naptr[:name],naptr[:ttl],naptr[:class],'NAPTR',naptr[:order],naptr[:preference],naptr[:flags],naptr[:service],naptr[:regexp],naptr[:replacement]].join(' ')+"\n"
+	  end
+
+	  out
+	end
+end
